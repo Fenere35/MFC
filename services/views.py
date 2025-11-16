@@ -16,7 +16,7 @@ def custom_404(request, exception):
 def custom_500(request):
     return render(request, 'services/500.html', status=500)
 
-@cache_page(60 * 15)
+# @cache_page(60 * 15)
 def home(request):
     """Главная страница с виджетами"""
     try:
@@ -70,45 +70,60 @@ def appointment_list(request):
 @login_required
 def appointment_create(request):
     """Создание новой записи на прием"""
-    if request.method == 'POST':
-        form = AppointmentForm(request.POST)
-        if form.is_valid():
-            appointment = form.save(commit=False)
-            appointment.user = request.user
-            appointment.save()
-            
-            # Отправляем уведомление
-            try:
-                send_appointment_notification(appointment)
-                messages.success(request, 'Запись на прием успешно создана! На вашу почту отправлено уведомление.')
-            except:
-                messages.success(request, 'Запись на прием успешно создана!')
+    try:
+        if request.method == 'POST':
+            form = AppointmentForm(request.POST)
+            if form.is_valid():
+                appointment = form.save(commit=False)
+                appointment.user = request.user
+                appointment.save()
                 
-            return redirect('services:appointment_list')
+                # Логируем "отправку" email
+                send_appointment_notification(appointment)
+                messages.success(request, 'Запись на прием успешно создана! В реальной системе вам было бы отправлено email-уведомление.')
+                    
+                return redirect('services:appointment_list')
+            else:
+                context = {'form': form}
+                return render(request, 'services/appointment_form.html', context)
+        else:
+            form = AppointmentForm()
+            context = {'form': form}
+            return render(request, 'services/appointment_form.html', context)
+    except Exception as e:
+        return HttpResponse(f"Ошибка при создании записи: {e}")
 
 @login_required
 def appointment_update(request, appointment_id):
     """Редактирование записи на прием"""
-    appointment = get_object_or_404(
-        Appointment, 
-        id=appointment_id, 
-        user=request.user
-    )
-    
-    if request.method == 'POST':
-        form = AppointmentForm(request.POST, instance=appointment)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Запись на прием успешно обновлена!')
-            return redirect('services:appointment_list')
-    else:
-        form = AppointmentForm(instance=appointment)
-    
-    context = {
-        'form': form,
-        'appointment': appointment,
-    }
-    return render(request, 'services/appointment_form.html', context)
+    try:
+        appointment = get_object_or_404(
+            Appointment, 
+            id=appointment_id, 
+            user=request.user
+        )
+        
+        if request.method == 'POST':
+            form = AppointmentForm(request.POST, instance=appointment)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Запись на прием успешно обновлена!')
+                return redirect('services:appointment_list')
+            else:
+                context = {
+                    'form': form,
+                    'appointment': appointment,
+                }
+                return render(request, 'services/appointment_form.html', context)
+        else:
+            form = AppointmentForm(instance=appointment)
+            context = {
+                'form': form,
+                'appointment': appointment,
+            }
+            return render(request, 'services/appointment_form.html', context)
+    except Exception as e:
+        return HttpResponse(f"Ошибка при обновлении записи: {e}")
 
 @login_required
 def appointment_delete(request, appointment_id):
