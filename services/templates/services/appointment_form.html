@@ -1,0 +1,101 @@
+{% extends "services/base.html" %}
+
+{% block title %}{% if appointment %}Редактирование записи{% else %}Новая запись на прием{% endif %} - МФЦ-Онлайн{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{% if appointment %}Редактирование записи{% else %}Новая запись на прием{% endif %}</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success" style="padding: 10px; margin: 10px 0; border-radius: 4px; background: #d4edda; color: #155724;">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_office">Офис МФЦ:</label>
+            {{ form.office }}
+            {% if form.office.errors %}
+                <div class="error" style="color: red;">{{ form.office.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_service">Услуга:</label>
+            {{ form.service }}
+            {% if form.service.errors %}
+                <div class="error" style="color: red;">{{ form.service.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_appointment_datetime">Дата и время приема:</label>
+            {{ form.appointment_datetime }}
+            {% if form.appointment_datetime.errors %}
+                <div class="error" style="color: red;">{{ form.appointment_datetime.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn-primary">
+                {% if appointment %}Обновить{% else %}Записаться{% endif %}
+            </button>
+            <a href="{% url 'services:appointment_list' %}" class="btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.form-group select,
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+</style>
+{% endblock %}

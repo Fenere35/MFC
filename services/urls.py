@@ -17,4 +17,8 @@ urlpatterns = [
     path('applications/<int:application_id>/delete/', views.application_delete, name='application_delete'),
     path('search/', views.search, name='search'),
     path('search/suggestions/', views.search_suggestions, name='search_suggestions'),
+    path('appointments/', views.appointment_list, name='appointment_list'),
+    path('appointments/create/', views.appointment_create, name='appointment_create'),
+    path('appointments/<int:appointment_id>/update/', views.appointment_update, name='appointment_update'),
+    path('appointments/<int:appointment_id>/delete/', views.appointment_delete, name='appointment_delete'),
 ]
