@@ -1,47 +1,84 @@
-{% extends 'services/base.html' %}
+{% extends "services/base.html" %}
 
 {% block title %}Главная - МФЦ-Онлайн{% endblock %}
 
 {% block content %}
-    <h1>Добро пожаловать в МФЦ-Онлайн</h1>
+<div class="container">
+    <h1>Добро пожаловать в МФЦ-Онлайн!</h1>
+    
+    <p>Текущий пользователь: 
+        {% if user.is_authenticated %}
+            {{ user.username }}
+        {% else %}
+            Гость
+        {% endif %}
+    </p>
+    
+    <div class="stats">
+        <h2>Статистика системы</h2>
+        <p>Всего услуг в системе: {{ stats.total_services|default:"0" }}</p>
+        <p>Всего офисов МФЦ: {{ stats.total_offices|default:"0" }}</p>
+    </div>
+    
+    <div class="simple-widgets">
+        <div class="widget">
+            <h3>Быстрые ссылки</h3>
+            <ul>
+                <li><a href="{% url 'services:service_list' %}">Все услуги</a></li>
+                <li><a href="{% url 'services:office_list' %}">Наши офисы</a></li>
+                <li><a href="{% url 'services:news_list' %}">Новости</a></li>
+                <li><a href="{% url 'services:search' %}">Поиск</a></li>
+            </ul>
+        </div>
+    </div>
+
     
     <div class="widget">
-        <h2>Статистика</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-            <div class="card">
-                <h3>Услуг</h3>
-                <p>{{ stats.total_services }}</p>
+        <h3>Последние новости</h3>
+        {% for news in latest_news %}
+            <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                <strong>{{ news.title }}</strong>
+                <p>{{ news.published_at|date:"d.m.Y" }}</p>
+                <p>{{ news.content|truncatewords:20 }}</p>
             </div>
-            <div class="card">
-                <h3>Офисов</h3>
-                <p>{{ stats.total_offices }}</p>
-            </div>
-            <div class="card">
-                <h3>Заявлений</h3>
-                <p>{{ stats.total_applications }}</p>
-            </div>
-        </div>
+        {% empty %}
+            <p>Новостей пока нет</p>
+        {% endfor %}
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-        <div class="widget">
-            <h2>Последние новости</h2>
-            {% for news in latest_news %}
-                <div class="card">
-                    <h3>{{ news.title }}</h3>
-                    <p>{{ news.published_at|date:"d.m.Y" }}</p>
-                </div>
-            {% endfor %}
-        </div>
-
-        <div class="widget">
-            <h2>Популярные услуги</h2>
-            {% for service in popular_services %}
-                <div class="card">
-                    <h3>{{ service.name }}</h3>
-                    <p>{{ service.application_count }} заявлений</p>
-                </div>
-            {% endfor %}
-        </div>
+    <div class="widget">
+        <h3>Популярные услуги</h3>
+        {% for service in popular_services %}
+            <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                <strong>{{ service.name }}</strong>
+                <p>Категория: {{ service.category.name }}</p>
+                <p>Заявлений: {{ service.application_count }}</p>
+            </div>
+        {% empty %}
+            <p>Услуг пока нет</p>
+        {% endfor %}
     </div>
+
+</div>
+
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.stats {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+.widget {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+</style>
 {% endblock %}
