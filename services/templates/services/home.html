@@ -1,0 +1,47 @@
+{% extends 'services/base.html' %}
+
+{% block title %}Главная - МФЦ-Онлайн{% endblock %}
+
+{% block content %}
+    <h1>Добро пожаловать в МФЦ-Онлайн</h1>
+    
+    <div class="widget">
+        <h2>Статистика</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="card">
+                <h3>Услуг</h3>
+                <p>{{ stats.total_services }}</p>
+            </div>
+            <div class="card">
+                <h3>Офисов</h3>
+                <p>{{ stats.total_offices }}</p>
+            </div>
+            <div class="card">
+                <h3>Заявлений</h3>
+                <p>{{ stats.total_applications }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div class="widget">
+            <h2>Последние новости</h2>
+            {% for news in latest_news %}
+                <div class="card">
+                    <h3>{{ news.title }}</h3>
+                    <p>{{ news.published_at|date:"d.m.Y" }}</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="widget">
+            <h2>Популярные услуги</h2>
+            {% for service in popular_services %}
+                <div class="card">
+                    <h3>{{ service.name }}</h3>
+                    <p>{{ service.application_count }} заявлений</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
