@@ -5,18 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}МФЦ-Онлайн{% endblock %}</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
             background-color: #f5f5f5;
         }
+        
+        /* Header */
         header {
             background: #2c3e50;
             color: white;
             padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        .header-content {
+        
+        .header-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
@@ -24,244 +36,280 @@
             justify-content: space-between;
             align-items: center;
         }
-        nav ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            gap: 20px;
-        }
-        nav a {
+        
+        .logo {
             color: white;
             text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: bold;
         }
-        nav a:hover {
-            text-decoration: underline;
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
         }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Burger menu */
+        .burger-menu {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        
+        .burger-line {
+            width: 25px;
+            height: 3px;
+            background: white;
+            margin: 3px 0;
+        }
+        
+        /* Main content */
         main {
-            min-height: 70vh;
+            min-height: calc(100vh - 140px);
+            padding: 2rem 0;
         }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        /* Footer */
         footer {
             background: #34495e;
             color: white;
             text-align: center;
-            padding: 2rem 0;
+            padding: 1.5rem 0;
             margin-top: 2rem;
+        }
+        
+        /* Search suggestions */
+        .search-suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .suggestion-item:hover {
+            background: #f8f9fa;
+        }
+        
+        form[method="get"] {
+            position: relative;
+        }
+        
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-links {
+                flex-direction: column;
+                gap: 0.5rem;
+                width: 100%;
+                display: none;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .burger-menu {
+                display: flex;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="header-content">
-            <h1><a href="/" style="color: white; text-decoration: none;">МФЦ-Онлайн</a></h1>
-            <nav>
-                <ul>
-                    <li><a href="/">Главная</a></li>
-                    <li><a href="/services/">Услуги</a></li>
-                    <li><a href="/offices/">Офисы</a></li>
-                    <li><a href="/news/">Новости</a></li>
-                    {% if user.is_authenticated %}
-                        <li><a href="/applications/">Мои заявления</a></li>
-                        <li><a href="/admin/logout/">Выйти</a></li>
-                    {% else %}
-                        <li><a href="/admin/login/">Войти</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
+        <div class="header-container">
+            <a href="{% url 'services:home' %}" class="logo">МФЦ-Онлайн</a>
+            
+            <div class="burger-menu">
+                <div class="burger-line"></div>
+                <div class="burger-line"></div>
+                <div class="burger-line"></div>
+            </div>
+            
+            <ul class="nav-links">
+                <li><a href="{% url 'services:home' %}">Главная</a></li>
+                <li><a href="{% url 'services:service_list' %}">Услуги</a></li>
+                <li><a href="{% url 'services:office_list' %}">Офисы</a></li>
+                <li><a href="{% url 'services:news_list' %}">Новости</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'services:application_list' %}">Мои заявления</a></li>
+                    <li><a href="{% url 'services:appointment_list' %}">Мои записи</a></li>
+                    <li><a href="{% url 'admin:logout' %}">Выйти ({{ user.username }})</a></li>
+                {% else %}
+                    <li><a href="{% url 'admin:login' %}">Войти</a></li>
+                {% endif %}
+            </ul>
         </div>
     </header>
 
     <main>
-        {% block content %}
-
-        {% endblock %}
+        <div class="container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="card" style="background: #d4edda; color: #155724; border-color: #c3e6cb;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% block content %}
+            {% endblock %}
+        </div>
     </main>
 
     <footer>
-        <div class="header-content">
+        <div class="container">
             <p>&copy; 2024 МФЦ-Онлайн. Все права защищены.</p>
+            <p>Телефон: 8-800-123-45-67</p>
         </div>
     </footer>
-</body>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Search suggestions script loaded');
-    
-    function initSearchSuggestions() {
-        const searchInputs = document.querySelectorAll('input[name="q"]');
-        console.log('Found search inputs:', searchInputs.length);
+
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.burger-menu').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
         
-        searchInputs.forEach(input => {
-            let timeoutId;
+        // Search suggestions
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInputs = document.querySelectorAll('input[name="q"]');
             
-            // Создаем контейнер для подсказок
-            const suggestionsContainer = document.createElement('div');
-            suggestionsContainer.className = 'search-suggestions';
-            suggestionsContainer.style.display = 'none';
-            input.parentNode.appendChild(suggestionsContainer);
-            
-            input.addEventListener('input', function() {
-                clearTimeout(timeoutId);
-                const query = this.value.trim();
-                suggestionsContainer.style.display = 'none';
+            searchInputs.forEach(input => {
+                let timeoutId;
+                const container = document.createElement('div');
+                container.className = 'search-suggestions';
+                container.style.display = 'none';
+                input.parentNode.appendChild(container);
                 
-                if (query.length < 1) {
+                input.addEventListener('input', function() {
+                    clearTimeout(timeoutId);
+                    const query = this.value.trim();
+                    container.style.display = 'none';
+                    
+                    if (query.length < 2) return;
+                    
+                    timeoutId = setTimeout(() => {
+                        fetch(`/search/suggestions/?q=${encodeURIComponent(query)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                showSuggestions(data.suggestions, container, input);
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                    }, 300);
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!input.contains(e.target) && !container.contains(e.target)) {
+                        container.style.display = 'none';
+                    }
+                });
+            });
+            
+            function showSuggestions(suggestions, container, input) {
+                container.innerHTML = '';
+                
+                if (suggestions.length === 0) {
+                    container.style.display = 'none';
                     return;
                 }
                 
-                timeoutId = setTimeout(() => {
-                    fetchSuggestions(query, suggestionsContainer, input);
-                }, 200);
-            });
-            
-            // Скрыть подсказки при клике вне поля
-            document.addEventListener('click', function(e) {
-                if (!input.contains(e.target) && !suggestionsContainer.contains(e.target)) {
-                    suggestionsContainer.style.display = 'none';
-                }
-            });
-            
-            // Обработка клавиш
-            input.addEventListener('keydown', function(e) {
-                const items = suggestionsContainer.querySelectorAll('.suggestion-item');
-                if (items.length === 0) return;
-                
-                let activeItem = suggestionsContainer.querySelector('.suggestion-item.active');
-                
-                switch(e.key) {
-                    case 'ArrowDown':
-                        e.preventDefault();
-                        if (!activeItem) {
-                            items[0].classList.add('active');
-                        } else {
-                            activeItem.classList.remove('active');
-                            const next = activeItem.nextElementSibling || items[0];
-                            next.classList.add('active');
-                        }
-                        break;
-                    case 'ArrowUp':
-                        e.preventDefault();
-                        if (activeItem) {
-                            activeItem.classList.remove('active');
-                            const prev = activeItem.previousElementSibling || items[items.length - 1];
-                            prev.classList.add('active');
-                        }
-                        break;
-                    case 'Enter':
-                        if (activeItem) {
-                            e.preventDefault();
-                            input.value = activeItem.textContent;
-                            suggestionsContainer.style.display = 'none';
-                            input.closest('form').submit();
-                        }
-                        break;
-                    case 'Escape':
-                        suggestionsContainer.style.display = 'none';
-                        break;
-                }
-            });
-        });
-    }
-    
-    function fetchSuggestions(query, container, input) {
-        console.log('Fetching suggestions for:', query);
-        
-        // Показываем индикатор загрузки
-        container.innerHTML = '<div class="suggestion-item">Загрузка...</div>';
-        container.style.display = 'block';
-        
-        fetch(`/search/suggestions/?q=${encodeURIComponent(query)}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Received suggestions:', data.suggestions);
-                showSuggestions(data.suggestions, container, input);
-            })
-            .catch(error => {
-                console.error('Error fetching suggestions:', error);
-                // Fallback to static suggestions
-                const staticSuggestions = generateStaticSuggestions(query);
-                showSuggestions(staticSuggestions, container, input);
-            });
-    }
-    
-    function generateStaticSuggestions(query) {
-        const allSuggestions = [
-            'паспорт', 'загранпаспорт', 'регистрация', 
-            'налоговый вычет', 'пособие', 'субсидия',
-            'юридическая консультация', 'ИП', 'недвижимость'
-        ];
-        
-        return allSuggestions.filter(suggestion => 
-            suggestion.toLowerCase().includes(query.toLowerCase())
-        ).slice(0, 5);
-    }
-    
-    function showSuggestions(suggestions, container, input) {
-        container.innerHTML = '';
-        
-        if (suggestions.length === 0) {
-            container.innerHTML = '<div class="suggestion-item">Ничего не найдено</div>';
-        } else {
-            suggestions.forEach(suggestion => {
-                const item = document.createElement('div');
-                item.className = 'suggestion-item';
-                item.textContent = suggestion;
-                item.addEventListener('click', function() {
-                    input.value = suggestion;
-                    container.style.display = 'none';
-                    input.closest('form').submit();
+                suggestions.forEach(suggestion => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = suggestion;
+                    item.addEventListener('click', function() {
+                        input.value = suggestion;
+                        container.style.display = 'none';
+                        input.closest('form').submit();
+                    });
+                    container.appendChild(item);
                 });
-                container.appendChild(item);
-            });
-        }
-        
-        // Позиционируем и показываем контейнер
-        container.style.width = input.offsetWidth + 'px';
-        container.style.top = (input.offsetTop + input.offsetHeight) + 'px';
-        container.style.left = input.offsetLeft + 'px';
-        container.style.display = 'block';
-    }
+                
+                container.style.width = input.offsetWidth + 'px';
+                container.style.display = 'block';
+            }
+        });
+    </script>
     
-    initSearchSuggestions();
-});
-</script>
-
-<style>
-.search-suggestions {
-    position: absolute;
-    background: white;
-    border: 1px solid #ddd;
-    border-top: none;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.suggestion-item {
-    padding: 10px 15px;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background-color 0.2s;
-}
-
-.suggestion-item:hover,
-.suggestion-item.active {
-    background-color: #3498db;
-    color: white;
-}
-
-.suggestion-item:last-child {
-    border-bottom: none;
-}
-
-form[method="get"] {
-    position: relative;
-}
-</style>
+    {% block extra_js %}{% endblock %}
+</body>
 </html>
