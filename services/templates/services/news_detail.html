@@ -1,0 +1,35 @@
+{% extends "services/base.html" %}
+
+{% block title %}{{ news.title }} - МФЦ-Онлайн{% endblock %}
+
+{% block content %}
+<div class="container">
+    <article class="news-detail">
+        <h1>{{ news.title }}</h1>
+        <div class="meta">
+            <p>Опубликовано: {{ news.published_at|date:"d.m.Y H:i" }}</p>
+            <p>Автор: {{ news.author.full_name }}</p>
+        </div>
+        <div class="content">
+            {{ news.content|linebreaks }}
+        </div>
+        <a href="{% url 'services:news_list %}" class="btn">Назад к списку новостей</a>
+    </article>
+</div>
+
+<style>
+.news-detail {
+    max-width: 800px;
+}
+.meta {
+    color: #666;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+.content {
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+</style>
+{% endblock %}
