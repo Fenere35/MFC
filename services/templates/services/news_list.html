@@ -1,33 +1,172 @@
 {% extends "services/base.html" %}
 
-{% block title %}Новости - МФЦ-Онлайн{% endblock %}
+{% block title %}Новости МФЦ - МФЦ-Онлайн{% endblock %}
 
 {% block content %}
 <div class="container">
     <h1>Новости МФЦ</h1>
 
-    <div class="news-list">
-        {% for news in news_list %}
-            <div class="card">
-                <h2><a href="{% url 'services:news_detail' news.id %}">{{ news.title }}</a></h2>
-                <p class="meta">Опубликовано: {{ news.published_at|date:"d.m.Y" }} | Автор: {{ news.author.full_name }}</p>
-                <p>{{ news.content|truncatewords:50 }}</p>
+    {% for news in news_list %}
+    <div class="card news-card">
+        <div class="news-header">
+            <h2>
+                <a href="{% url 'services:news_detail' news.id %}" class="news-title">
+                    {{ news.title }}
+                </a>
+            </h2>
+            <div class="news-meta">
+                <span class="news-date">
+                    <i class="fas fa-calendar"></i>
+                    {{ news.published_at|date:"d.m.Y H:i" }}
+                </span>
+                <span class="news-author">
+                    <i class="fas fa-user"></i>
+                    {{ news.author.full_name }}
+                </span>
+                <span class="news-office">
+                    <i class="fas fa-building"></i>
+                    {{ news.author.office.name }}
+                </span>
             </div>
-        {% empty %}
-            <p>Новостей пока нет.</p>
-        {% endfor %}
+        </div>
+        
+        <div class="news-content">
+            <p>{{ news.content|truncatewords:50 }}</p>
+        </div>
+        
+        <div class="news-footer">
+            <a href="{% url 'services:news_detail' news.id %}" class="btn-primary">
+                Читать полностью →
+            </a>
+        </div>
     </div>
+    {% empty %}
+    <div class="card">
+        <div class="empty-state">
+            <h3>Новостей пока нет</h3>
+            <p>Следите за обновлениями, скоро здесь появятся новости о работе МФЦ.</p>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 
 <style>
-.news-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.news-card {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 0;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
-.meta {
-    color: #666;
-    font-size: 0.9em;
+
+.news-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+}
+
+.news-header {
+    padding: 25px 25px 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.news-title {
+    color: #2c3e50;
+    text-decoration: none;
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.news-title:hover {
+    color: #3498db;
+}
+
+.news-meta {
+    display: flex;
+    gap: 20px;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    flex-wrap: wrap;
+}
+
+.news-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.news-content {
+    padding: 20px 25px;
+    line-height: 1.6;
+    color: #34495e;
+}
+
+.news-footer {
+    padding: 15px 25px 25px;
+    border-top: 1px solid #f0f0f0;
+    text-align: right;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #7f8c8d;
+}
+
+.empty-state h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2980b9, #2573a7);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .news-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .news-header,
+    .news-content,
+    .news-footer {
+        padding: 20px;
+    }
+    
+    .news-title {
+        font-size: 1.2rem;
+    }
+}
+
+/* Иконки (можно заменить на реальные Font Awesome) */
+.fas {
+    width: 16px;
+    text-align: center;
 }
 </style>
 {% endblock %}

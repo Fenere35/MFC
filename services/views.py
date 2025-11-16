@@ -224,10 +224,17 @@ def news_list(request):
 def news_detail(request, news_id):
     """Детальная страница новости"""
     try:
-        news = get_object_or_404(News.objects.select_related('author'), id=news_id)
+        news = get_object_or_404(
+            News.objects.select_related('author', 'author__office'), 
+            id=news_id
+        )
+        
+        # Получаем связанные новости (последние 3, исключая текущую)
+        related_news_list = News.objects.exclude(id=news_id).select_related('author')[:3]
         
         context = {
             'news': news,
+            'related_news_list': related_news_list,
         }
         return render(request, 'services/news_detail.html', context)
     except Exception as e:
