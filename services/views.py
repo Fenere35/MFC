@@ -5,8 +5,127 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404, JsonResponse
 from django.core.paginator import Paginator
 from .models import *
+from .forms import ApplicationForm, AppointmentForm
 from django.contrib import messages
-from .forms import ApplicationForm
+from django.views.decorators.cache import cache_page
+from .utils import send_appointment_notification
+
+def custom_404(request, exception):
+    return render(request, 'services/404.html', status=404)
+
+def custom_500(request):
+    return render(request, 'services/500.html', status=500)
+
+@cache_page(60 * 15)
+def home(request):
+    """Главная страница с виджетами"""
+    try:
+        # Виджет 1: Последние новости
+        latest_news = News.objects.select_related('author').order_by('-published_at')[:5]
+        
+        # Виджет 2: Популярные услуги (по количеству заявлений)
+        popular_services = Service.objects.annotate(
+            application_count=Count('application')
+        ).order_by('-application_count')[:5]
+        
+        # Виджет 3: Офисы МФЦ
+        offices = MFCOffice.objects.annotate(
+            service_count=Count('officeservice')
+        ).order_by('?')[:5]
+        
+        # Виджет 4: Статистика (агрегатные функции)
+        stats = {
+            'total_services': Service.objects.count(),
+            'total_offices': MFCOffice.objects.count(),
+            'total_applications': Application.objects.count(),
+            'avg_service_cost': Service.objects.aggregate(avg_cost=Avg('cost'))['avg_cost'] or 0,
+        }
+        
+        context = {
+            'latest_news': latest_news,
+            'popular_services': popular_services,
+            'offices': offices,
+            'stats': stats,
+        }
+        return render(request, 'services/home.html', context)
+    except Exception as e:
+        return HttpResponse(f"Ошибка при загрузке главной страницы: {e}")
+
+
+@login_required
+def appointment_list(request):
+    """Список записей на прием пользователя"""
+    try:
+        appointments = Appointment.objects.filter(
+            user=request.user
+        ).select_related('office', 'service').order_by('appointment_datetime')
+        
+        context = {
+            'appointments': appointments,
+        }
+        return render(request, 'services/appointment_list.html', context)
+    except Exception as e:
+        return HttpResponse(f"Ошибка при загрузке записей на прием: {e}")
+
+@login_required
+def appointment_create(request):
+    """Создание новой записи на прием"""
+    if request.method == 'POST':
+        form = AppointmentForm(request.POST)
+        if form.is_valid():
+            appointment = form.save(commit=False)
+            appointment.user = request.user
+            appointment.save()
+            
+            # Отправляем уведомление
+            try:
+                send_appointment_notification(appointment)
+                messages.success(request, 'Запись на прием успешно создана! На вашу почту отправлено уведомление.')
+            except:
+                messages.success(request, 'Запись на прием успешно создана!')
+                
+            return redirect('services:appointment_list')
+
+@login_required
+def appointment_update(request, appointment_id):
+    """Редактирование записи на прием"""
+    appointment = get_object_or_404(
+        Appointment, 
+        id=appointment_id, 
+        user=request.user
+    )
+    
+    if request.method == 'POST':
+        form = AppointmentForm(request.POST, instance=appointment)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Запись на прием успешно обновлена!')
+            return redirect('services:appointment_list')
+    else:
+        form = AppointmentForm(instance=appointment)
+    
+    context = {
+        'form': form,
+        'appointment': appointment,
+    }
+    return render(request, 'services/appointment_form.html', context)
+
+@login_required
+def appointment_delete(request, appointment_id):
+    """Удаление записи на прием"""
+    appointment = get_object_or_404(
+        Appointment, 
+        id=appointment_id, 
+        user=request.user
+    )
+    
+    if request.method == 'POST':
+        appointment.delete()
+        messages.success(request, 'Запись на прием успешно удалена!')
+        return redirect('services:appointment_list')
+    
+    context = {'appointment': appointment}
+    return render(request, 'services/appointment_confirm_delete.html', context)
 
 @login_required
 def application_create(request):
@@ -86,39 +205,7 @@ def application_detail(request, application_id):
     except Exception as e:
         return HttpResponse(f"Ошибка при загрузке заявления: {e}")
 
-def home(request):
-    """Главная страница с виджетами"""
-    try:
-        # Виджет 1: Последние новости
-        latest_news = News.objects.select_related('author').order_by('-published_at')[:5]
-        
-        # Виджет 2: Популярные услуги (по количеству заявлений)
-        popular_services = Service.objects.annotate(
-            application_count=Count('application')
-        ).order_by('-application_count')[:5]
-        
-        # Виджет 3: Офисы МФЦ
-        offices = MFCOffice.objects.annotate(
-            service_count=Count('officeservice')
-        ).order_by('?')[:5]
-        
-        # Виджет 4: Статистика (агрегатные функции)
-        stats = {
-            'total_services': Service.objects.count(),
-            'total_offices': MFCOffice.objects.count(),
-            'total_applications': Application.objects.count(),
-            'avg_service_cost': Service.objects.aggregate(avg_cost=Avg('cost'))['avg_cost'] or 0,
-        }
-        
-        context = {
-            'latest_news': latest_news,
-            'popular_services': popular_services,
-            'offices': offices,
-            'stats': stats,
-        }
-        return render(request, 'services/home.html', context)
-    except Exception as e:
-        return HttpResponse(f"Ошибка при загрузке главной страницы: {e}")
+
 
 def service_list(request):
     """Список всех услуг"""

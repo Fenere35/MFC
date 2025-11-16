@@ -79,6 +79,20 @@ class ApplicationAdmin(admin.ModelAdmin):
     @admin.display(description='Пользователь')
     def user_info(self, obj):
         return f"{obj.user.get_full_name()} ({obj.user.username})"
+        
+    actions = ['mark_as_completed', 'mark_as_rejected']
+    
+    @admin.action(description='Пометить как выполненные')
+    def mark_as_completed(self, request, queryset):
+        completed_status = ApplicationStatus.objects.get(name='Выполнено')
+        updated = queryset.update(status=completed_status)
+        self.message_user(request, f'{updated} заявлений помечено как выполненные.')
+    
+    @admin.action(description='Пометить как отклоненные')
+    def mark_as_rejected(self, request, queryset):
+        rejected_status = ApplicationStatus.objects.get(name='Отклонено')
+        updated = queryset.update(status=rejected_status)
+        self.message_user(request, f'{updated} заявлений помечено как отклоненные.')
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
@@ -91,6 +105,18 @@ class AppointmentAdmin(admin.ModelAdmin):
     @admin.display(description='Пользователь')
     def user_info(self, obj):
         return obj.user.get_full_name() or obj.user.username
+    
+    actions = ['mark_as_completed', 'cancel_appointments']
+    
+    @admin.action(description='Пометить как выполненные')
+    def mark_as_completed(self, request, queryset):
+        updated = queryset.update(status='completed')
+        self.message_user(request, f'{updated} записей помечено как выполненные.')
+    
+    @admin.action(description='Отменить записи')
+    def cancel_appointments(self, request, queryset):
+        updated = queryset.update(status='cancelled')
+        self.message_user(request, f'{updated} записей отменено.')
 
 @admin.register(OfficeService)
 class OfficeServiceAdmin(admin.ModelAdmin):

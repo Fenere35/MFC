@@ -26,6 +26,10 @@ class Service(models.Model):
         verbose_name = "Услуга"
         verbose_name_plural = "Услуги"
         ordering = ['name']
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['category']),
+        ]
     
     def __str__(self):
         return self.name
@@ -99,6 +103,10 @@ class Application(models.Model):
         verbose_name = "Заявление"
         verbose_name_plural = "Заявления"
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['status']),
+        ]
     
     def __str__(self):
         return f"Заявление #{self.id} - {self.service.name}"
@@ -123,6 +131,10 @@ class Appointment(models.Model):
         verbose_name = "Запись на прием"
         verbose_name_plural = "Записи на прием"
         ordering = ['appointment_datetime']
+        indexes = [
+            models.Index(fields=['user', 'appointment_datetime']),
+            models.Index(fields=['office', 'appointment_datetime']),
+        ]
     
     def __str__(self):
         return f"Запись #{self.id} - {self.user.get_full_name()}"
