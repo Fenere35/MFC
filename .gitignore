@@ -1,0 +1,39 @@
+@"
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+staticfiles/
+
+# Environments
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# PyInstaller
+build/
+dist/
+
+# Environments
+.env
+.venv
+"@ | Out-File -FilePath .gitignore -Encoding UTF8
