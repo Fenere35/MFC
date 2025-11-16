@@ -5,6 +5,86 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404, JsonResponse
 from django.core.paginator import Paginator
 from .models import *
+from django.contrib import messages
+from .forms import ApplicationForm
+
+@login_required
+def application_create(request):
+    """Создание нового заявления"""
+    if request.method == 'POST':
+        form = ApplicationForm(request.POST)
+        if form.is_valid():
+            application = form.save(commit=False)
+            application.user = request.user
+            # Устанавливаем начальный статус "Подано"
+            initial_status = ApplicationStatus.objects.get(name='Подано')
+            application.status = initial_status
+            application.save()
+            messages.success(request, 'Заявление успешно подано!')
+            return redirect('services:application_list')
+    else:
+        form = ApplicationForm()
+    
+    context = {'form': form}
+    return render(request, 'services/application_form.html', context)
+
+@login_required
+def application_update(request, application_id):
+    """Редактирование заявления"""
+    application = get_object_or_404(
+        Application, 
+        id=application_id, 
+        user=request.user
+    )
+    
+    if request.method == 'POST':
+        form = ApplicationForm(request.POST, instance=application)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Заявление успешно обновлено!')
+            return redirect('services:application_list')
+    else:
+        form = ApplicationForm(instance=application)
+    
+    context = {
+        'form': form,
+        'application': application,
+    }
+    return render(request, 'services/application_form.html', context)
+
+@login_required
+def application_delete(request, application_id):
+    """Удаление заявления"""
+    application = get_object_or_404(
+        Application, 
+        id=application_id, 
+        user=request.user
+    )
+    
+    if request.method == 'POST':
+        application.delete()
+        messages.success(request, 'Заявление успешно удалено!')
+        return redirect('services:application_list')
+    
+    context = {'application': application}
+    return render(request, 'services/application_confirm_delete.html', context)
+
+@login_required
+def application_detail(request, application_id):
+    """Детальная страница заявления"""
+    try:
+        application = get_object_or_404(
+            Application.objects.select_related('service', 'status', 'service__category'),
+            id=application_id,
+            user=request.user
+        )
+        
+        context = {
+            'application': application,
+        }
+        return render(request, 'services/application_detail.html', context)
+    except Exception as e:
+        return HttpResponse(f"Ошибка при загрузке заявления: {e}")
 
 def home(request):
     """Главная страница с виджетами"""

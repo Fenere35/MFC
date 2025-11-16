@@ -91,7 +91,7 @@ class Application(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
     service = models.ForeignKey(Service, on_delete=models.CASCADE, verbose_name="Услуга")
     status = models.ForeignKey(ApplicationStatus, on_delete=models.CASCADE, verbose_name="Статус")
-    application_data = models.JSONField(verbose_name="Данные заявления", default=dict)
+    application_data = models.TextField(verbose_name="Данные заявления", default="", blank=True)  
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
     

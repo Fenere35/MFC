@@ -1,0 +1,147 @@
+{% extends "services/base.html" %}
+
+{% block title %}Заявление #{{ application.id }} - МФЦ-Онлайн{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Навигация -->
+    <nav style="margin-bottom: 20px;">
+        <a href="{% url 'services:application_list' %}">← Назад к списку заявлений</a>
+    </nav>
+
+    <h1>Заявление #{{ application.id }}</h1>
+
+    <div class="card">
+        <div class="card-section">
+            <h2>Основная информация</h2>
+            <p><strong>Услуга:</strong> {{ application.service.name }}</p>
+            <p><strong>Категория услуги:</strong> {{ application.service.category.name }}</p>
+            <p><strong>Статус:</strong> 
+                <span class="status-badge status-{{ application.status.name|slugify }}">
+                    {{ application.status.name }}
+                </span>
+            </p>
+            <p><strong>Дата подачи:</strong> {{ application.created_at|date:"d.m.Y H:i" }}</p>
+            <p><strong>Последнее обновление:</strong> {{ application.updated_at|date:"d.m.Y H:i" }}</p>
+        </div>
+
+        <div class="card-section">
+            <h2>Детали заявления</h2>
+            <div class="application-data">
+                {{ application.application_data|linebreaks }}
+            </div>
+        </div>
+
+        <div class="card-section">
+            <h2>Информация об услуге</h2>
+            <p><strong>Срок исполнения:</strong> {{ application.service.execution_term }}</p>
+            <p><strong>Стоимость:</strong> 
+                {% if application.service.cost > 0 %}
+                    {{ application.service.cost }} руб.
+                {% else %}
+                    Бесплатно
+                {% endif %}
+            </p>
+            <p><strong>Описание:</strong> {{ application.service.description }}</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <a href="{% url 'services:application_update' application.id %}" class="btn-warning">Редактировать</a>
+        <a href="{% url 'services:application_delete' application.id %}" class="btn-danger">Удалить</a>
+        <a href="{% url 'services:application_list' %}" class="btn-secondary">Вернуться к списку</a>
+    </div>
+</div>
+
+<style>
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-section {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.card-section:last-child {
+    border-bottom: none;
+}
+
+.application-data {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.status-подано {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-принято-в-работу {
+    background: #cce7ff;
+    color: #004085;
+}
+
+.status-требуются-документы {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-выполнено {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-отклонено {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+</style>
+{% endblock %}
