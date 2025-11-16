@@ -1,0 +1,55 @@
+{% extends 'services/base.html' %}
+
+{% block title %}Офисы МФЦ - МФЦ-Онлайн{% endblock %}
+
+{% block content %}
+<h1>Офисы МФЦ</h1>
+
+<!-- Поиск -->
+<form method="get" class="search-form">
+    <input type="text" name="search" placeholder="Поиск офисов по названию или адресу..." 
+           value="{{ search_query }}" aria-label="Поиск офисов">
+    <button type="submit">Найти</button>
+    {% if search_query %}
+        <a href="{% url 'services:office_list' %}" style="padding: 0.5rem 1rem; background: #95a5a6; color: white; text-decoration: none; border-radius: 4px;">
+            Сбросить
+        </a>
+    {% endif %}
+</form>
+
+<!-- Список офисов -->
+<div class="office-list">
+    {% for office in offices %}
+        <div class="card">
+            <h2>{{ office.name }}</h2>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                <div>
+                    <p style="margin: 0.5rem 0;">
+                        <strong>Адрес:</strong> {{ office.address }}
+                    </p>
+                    <p style="margin: 0.5rem 0;">
+                        <strong>Телефон:</strong> {{ office.phone }}
+                    </p>
+                    <p style="margin: 0.5rem 0;">
+                        <strong>График работы:</strong> {{ office.work_schedule }}
+                    </p>
+                </div>
+                <div style="text-align: right;">
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                        <p style="margin: 0.25rem 0;">
+                            <strong>Сотрудников:</strong> {{ office.employee_count }}
+                        </p>
+                        <p style="margin: 0.25rem 0;">
+                            <strong>Услуг:</strong> {{ office.service_count }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="card">
+            <p>Офисы не найдены.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

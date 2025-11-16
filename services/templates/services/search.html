@@ -1,0 +1,74 @@
+{% extends 'services/base.html' %}
+
+{% block title %}Результаты поиска - МФЦ-Онлайн{% endblock %}
+
+{% block content %}
+<h1>Результаты поиска</h1>
+
+{% if query %}
+    <p>По запросу "{{ query }}" найдено:</p>
+    
+    <!-- Услуги -->
+    {% if results.services %}
+        <div class="widget">
+            <h2>Услуги ({{ results.services|length }})</h2>
+            {% for service in results.services %}
+                <div class="card">
+                    <h3>
+                        <a href="{% url 'services:service_detail' service.id %}">
+                            {{ service.name }}
+                        </a>
+                    </h3>
+                    <p style="color: #666;">{{ service.category.name }}</p>
+                    <p>{{ service.description|truncatewords:20 }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- Офисы -->
+    {% if results.offices %}
+        <div class="widget">
+            <h2>Офисы ({{ results.offices|length }})</h2>
+            {% for office in results.offices %}
+                <div class="card">
+                    <h3>{{ office.name }}</h3>
+                    <p style="color: #666;">{{ office.address }}</p>
+                    <p>Телефон: {{ office.phone }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- Новости -->
+    {% if results.news %}
+        <div class="widget">
+            <h2>Новости ({{ results.news|length }})</h2>
+            {% for news in results.news %}
+                <div class="card">
+                    <h3>
+                        <a href="{% url 'services:news_detail' news.id %}">
+                            {{ news.title }}
+                        </a>
+                    </h3>
+                    <p style="color: #666;">
+                        {{ news.published_at|date:"d.m.Y" }} • {{ news.author.full_name }}
+                    </p>
+                    <p>{{ news.content|truncatewords:30 }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% if not results.services and not results.offices and not results.news %}
+        <div class="card">
+            <p>Ничего не найдено. Попробуйте изменить запрос.</p>
+        </div>
+    {% endif %}
+    
+{% else %}
+    <div class="card">
+        <p>Введите поисковый запрос.</p>
+    </div>
+{% endif %}
+{% endblock %}

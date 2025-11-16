@@ -1,0 +1,61 @@
+{% extends 'services/base.html' %}
+
+{% block title %}Услуги МФЦ - МФЦ-Онлайн{% endblock %}
+
+{% block content %}
+<h1>Услуги МФЦ</h1>
+
+<!-- Фильтр по категориям -->
+<div style="margin-bottom: 2rem;">
+    <form method="get" class="search-form">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <select name="category" onchange="this.form.submit()" style="padding: 0.5rem; border-radius: 4px;">
+                <option value="">Все категории</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"i" %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <input type="text" name="search" placeholder="Поиск услуг..." value="{{ search_query }}" 
+                   style="flex: 1; min-width: 200px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+            <button type="submit">Найти</button>
+            <a href="{% url 'services:service_list' %}" style="padding: 0.5rem 1rem; background: #95a5a6; color: white; text-decoration: none; border-radius: 4px;">
+                Сбросить
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Список услуг -->
+<div class="service-list">
+    {% for service in services %}
+        <div class="card">
+            <h2>
+                <a href="{% url 'services:service_detail' service.id %}" style="color: inherit; text-decoration: none;">
+                    {{ service.name }}
+                </a>
+            </h2>
+            <p style="color: #666; margin-bottom: 0.5rem;">
+                Категория: {{ service.category.name }}
+            </p>
+            <p style="margin-bottom: 0.5rem;">{{ service.description|truncatewords:30 }}</p>
+            <div style="display: flex; gap: 2rem; color: #666; font-size: 0.9rem;">
+                <span><strong>Срок:</strong> {{ service.execution_term }}</span>
+                <span><strong>Стоимость:</strong> 
+                    {% if service.cost > 0 %}
+                        {{ service.cost }} ₽
+                    {% else %}
+                        Бесплатно
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    {% empty %}
+        <div class="card">
+            <p>Услуги не найдены.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
