@@ -4,32 +4,55 @@
 
 {% block content %}
 <div class="container">
-    <article class="news-detail">
-        <h1>{{ news.title }}</h1>
-        <div class="meta">
-            <p>Опубликовано: {{ news.published_at|date:"d.m.Y H:i" }}</p>
-            <p>Автор: {{ news.author.full_name }}</p>
-        </div>
-        <div class="content">
+    <!-- Навигация -->
+    <nav style="margin-bottom: 20px;">
+        <a href="{% url 'services:news_list' %}">← Все новости</a>
+    </nav>
+    
+    <!-- Заголовок новости -->
+    <article class="card">
+        <header style="border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+            <h1>{{ news.title }}</h1>
+            <div style="color: #666; font-size: 0.9rem;">
+                <time datetime="{{ news.published_at|date:'c' }}">
+                    {{ news.published_at|date:"d.m.Y H:i" }}
+                </time>
+                | Автор: {{ news.author.full_name }}
+            </div>
+        </header>
+        
+        <!-- Содержание новости -->
+        <div style="line-height: 1.8; font-size: 1.1rem;">
             {{ news.content|linebreaks }}
         </div>
-        <a href="{% url 'services:news_list %}" class="btn">Назад к списку новостей</a>
+        
+        <!-- Дополнительная информация -->
+        <footer style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; color: #666;">
+            <p><strong>Офис:</strong> {{ news.author.office.name }}</p>
+            <p><strong>Должность:</strong> {{ news.author.get_position_display }}</p>
+        </footer>
     </article>
+    
+    <!-- Кнопка возврата -->
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="{% url 'services:news_list' %}" style="display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 5px;">
+            Вернуться к списку новостей
+        </a>
+    </div>
 </div>
 
 <style>
-.news-detail {
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.container {
     max-width: 800px;
-}
-.meta {
-    color: #666;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
-.content {
-    line-height: 1.6;
-    margin-bottom: 20px;
+    margin: 0 auto;
+    padding: 20px;
 }
 </style>
 {% endblock %}
