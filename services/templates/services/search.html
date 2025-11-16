@@ -1,74 +1,95 @@
-{% extends 'services/base.html' %}
+{% extends "services/base.html" %}
 
-{% block title %}Результаты поиска - МФЦ-Онлайн{% endblock %}
+{% block title %}Поиск - МФЦ-Онлайн{% endblock %}
 
 {% block content %}
-<h1>Результаты поиска</h1>
+<div class="container">
+    <h1>Поиск</h1>
+    
+    <!-- Форма поиска -->
+    <form method="get" action="{% url 'services:search' %}" style="margin-bottom: 30px;">
+        <div style="display: flex; gap: 10px;">
+            <input type="text" name="q" placeholder="Поиск услуг, офисов, новостей..." 
+                   value="{{ query }}" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            <button type="submit" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px;">
+                Найти
+            </button>
+        </div>
+    </form>
 
-{% if query %}
-    <p>По запросу "{{ query }}" найдено:</p>
-    
-    <!-- Услуги -->
-    {% if results.services %}
-        <div class="widget">
-            <h2>Услуги ({{ results.services|length }})</h2>
+    {% if query %}
+        <h2>Результаты поиска для "{{ query }}"</h2>
+        
+        <!-- Услуги -->
+        {% if results.services %}
+        <div class="section">
+            <h3>Услуги ({{ results.services|length }})</h3>
             {% for service in results.services %}
-                <div class="card">
-                    <h3>
-                        <a href="{% url 'services:service_detail' service.id %}">
-                            {{ service.name }}
-                        </a>
-                    </h3>
-                    <p style="color: #666;">{{ service.category.name }}</p>
-                    <p>{{ service.description|truncatewords:20 }}</p>
-                </div>
+            <div class="card">
+                <h4><a href="{% url 'services:service_detail' service.id %}">{{ service.name }}</a></h4>
+                <p>{{ service.description|truncatewords:30 }}</p>
+                <p><strong>Категория:</strong> {{ service.category.name }}</p>
+            </div>
             {% endfor %}
         </div>
-    {% endif %}
-    
-    <!-- Офисы -->
-    {% if results.offices %}
-        <div class="widget">
-            <h2>Офисы ({{ results.offices|length }})</h2>
+        {% endif %}
+        
+        <!-- Офисы -->
+        {% if results.offices %}
+        <div class="section">
+            <h3>Офисы ({{ results.offices|length }})</h3>
             {% for office in results.offices %}
-                <div class="card">
-                    <h3>{{ office.name }}</h3>
-                    <p style="color: #666;">{{ office.address }}</p>
-                    <p>Телефон: {{ office.phone }}</p>
-                </div>
+            <div class="card">
+                <h4>{{ office.name }}</h4>
+                <p><strong>Адрес:</strong> {{ office.address }}</p>
+                <p><strong>Телефон:</strong> {{ office.phone }}</p>
+            </div>
             {% endfor %}
         </div>
-    {% endif %}
-    
-    <!-- Новости -->
-    {% if results.news %}
-        <div class="widget">
-            <h2>Новости ({{ results.news|length }})</h2>
+        {% endif %}
+        
+        <!-- Новости -->
+        {% if results.news %}
+        <div class="section">
+            <h3>Новости ({{ results.news|length }})</h3>
             {% for news in results.news %}
-                <div class="card">
-                    <h3>
-                        <a href="{% url 'services:news_detail' news.id %}">
-                            {{ news.title }}
-                        </a>
-                    </h3>
-                    <p style="color: #666;">
-                        {{ news.published_at|date:"d.m.Y" }} • {{ news.author.full_name }}
-                    </p>
-                    <p>{{ news.content|truncatewords:30 }}</p>
-                </div>
+            <div class="card">
+                <h4><a href="{% url 'services:news_detail' news.id %}">{{ news.title }}</a></h4>
+                <p>{{ news.content|truncatewords:30 }}</p>
+                <p><strong>Дата:</strong> {{ news.published_at|date:"d.m.Y" }}</p>
+            </div>
             {% endfor %}
         </div>
-    {% endif %}
-    
-    {% if not results.services and not results.offices and not results.news %}
+        {% endif %}
+        
+        {% if not results.services and not results.offices and not results.news %}
         <div class="card">
-            <p>Ничего не найдено. Попробуйте изменить запрос.</p>
+            <p>По вашему запросу ничего не найдено. Попробуйте изменить запрос.</p>
+        </div>
+        {% endif %}
+        
+    {% else %}
+        <div class="card">
+            <p>Введите поисковый запрос в поле выше.</p>
         </div>
     {% endif %}
-    
-{% else %}
-    <div class="card">
-        <p>Введите поисковый запрос.</p>
-    </div>
-{% endif %}
+</div>
+
+<style>
+.section {
+    margin-bottom: 30px;
+}
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+</style>
 {% endblock %}

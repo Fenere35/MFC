@@ -1,55 +1,67 @@
-{% extends 'services/base.html' %}
+{% extends "services/base.html" %}
 
 {% block title %}Офисы МФЦ - МФЦ-Онлайн{% endblock %}
 
 {% block content %}
-<h1>Офисы МФЦ</h1>
+<div class="container">
+    <h1>Офисы МФЦ</h1>
+    
+    <!-- Форма поиска -->
+    <form method="get" action="{% url 'services:office_list' %}" style="margin-bottom: 20px;">
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" name="q" placeholder="Поиск офисов..." 
+                   value="{{ query|default:'' }}" 
+                   style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <button type="submit" style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Найти
+            </button>
+            {% if query %}
+            <a href="{% url 'services:office_list' %}" style="padding: 8px 16px; background: #95a5a6; color: white; text-decoration: none; border-radius: 4px;">
+                Сбросить
+            </a>
+            {% endif %}
+        </div>
+    </form>
 
-<!-- Поиск -->
-<form method="get" class="search-form">
-    <input type="text" name="search" placeholder="Поиск офисов по названию или адресу..." 
-           value="{{ search_query }}" aria-label="Поиск офисов">
-    <button type="submit">Найти</button>
-    {% if search_query %}
-        <a href="{% url 'services:office_list' %}" style="padding: 0.5rem 1rem; background: #95a5a6; color: white; text-decoration: none; border-radius: 4px;">
-            Сбросить
-        </a>
+    <!-- Результаты поиска -->
+    {% if query %}
+        <div style="margin-bottom: 15px;">
+            <p>Результаты поиска по запросу: "<strong>{{ query }}</strong>"</p>
+            <p>Найдено офисов: {{ offices.count }}</p>
+        </div>
     {% endif %}
-</form>
 
-<!-- Список офисов -->
-<div class="office-list">
+    <!-- Список офисов -->
     {% for office in offices %}
-        <div class="card">
-            <h2>{{ office.name }}</h2>
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-                <div>
-                    <p style="margin: 0.5rem 0;">
-                        <strong>Адрес:</strong> {{ office.address }}
-                    </p>
-                    <p style="margin: 0.5rem 0;">
-                        <strong>Телефон:</strong> {{ office.phone }}
-                    </p>
-                    <p style="margin: 0.5rem 0;">
-                        <strong>График работы:</strong> {{ office.work_schedule }}
-                    </p>
-                </div>
-                <div style="text-align: right;">
-                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
-                        <p style="margin: 0.25rem 0;">
-                            <strong>Сотрудников:</strong> {{ office.employee_count }}
-                        </p>
-                        <p style="margin: 0.25rem 0;">
-                            <strong>Услуг:</strong> {{ office.service_count }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="card">
+        <h3>{{ office.name }}</h3>
+        <p><strong>Адрес:</strong> {{ office.address }}</p>
+        <p><strong>Телефон:</strong> {{ office.phone }}</p>
+        <p><strong>График работы:</strong> {{ office.work_schedule }}</p>
+    </div>
     {% empty %}
-        <div class="card">
-            <p>Офисы не найдены.</p>
-        </div>
+    <div class="card">
+        <p>Офисы не найдены.</p>
+        {% if query %}
+            <p>Попробуйте изменить поисковый запрос.</p>
+        {% endif %}
+    </div>
     {% endfor %}
 </div>
+
+<style>
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+</style>
 {% endblock %}

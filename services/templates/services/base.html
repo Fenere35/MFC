@@ -73,7 +73,7 @@
 
     <main>
         {% block content %}
-        
+
         {% endblock %}
     </main>
 
@@ -83,4 +83,185 @@
         </div>
     </footer>
 </body>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Search suggestions script loaded');
+    
+    function initSearchSuggestions() {
+        const searchInputs = document.querySelectorAll('input[name="q"]');
+        console.log('Found search inputs:', searchInputs.length);
+        
+        searchInputs.forEach(input => {
+            let timeoutId;
+            
+            // Создаем контейнер для подсказок
+            const suggestionsContainer = document.createElement('div');
+            suggestionsContainer.className = 'search-suggestions';
+            suggestionsContainer.style.display = 'none';
+            input.parentNode.appendChild(suggestionsContainer);
+            
+            input.addEventListener('input', function() {
+                clearTimeout(timeoutId);
+                const query = this.value.trim();
+                suggestionsContainer.style.display = 'none';
+                
+                if (query.length < 1) {
+                    return;
+                }
+                
+                timeoutId = setTimeout(() => {
+                    fetchSuggestions(query, suggestionsContainer, input);
+                }, 200);
+            });
+            
+            // Скрыть подсказки при клике вне поля
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                    suggestionsContainer.style.display = 'none';
+                }
+            });
+            
+            // Обработка клавиш
+            input.addEventListener('keydown', function(e) {
+                const items = suggestionsContainer.querySelectorAll('.suggestion-item');
+                if (items.length === 0) return;
+                
+                let activeItem = suggestionsContainer.querySelector('.suggestion-item.active');
+                
+                switch(e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        if (!activeItem) {
+                            items[0].classList.add('active');
+                        } else {
+                            activeItem.classList.remove('active');
+                            const next = activeItem.nextElementSibling || items[0];
+                            next.classList.add('active');
+                        }
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        if (activeItem) {
+                            activeItem.classList.remove('active');
+                            const prev = activeItem.previousElementSibling || items[items.length - 1];
+                            prev.classList.add('active');
+                        }
+                        break;
+                    case 'Enter':
+                        if (activeItem) {
+                            e.preventDefault();
+                            input.value = activeItem.textContent;
+                            suggestionsContainer.style.display = 'none';
+                            input.closest('form').submit();
+                        }
+                        break;
+                    case 'Escape':
+                        suggestionsContainer.style.display = 'none';
+                        break;
+                }
+            });
+        });
+    }
+    
+    function fetchSuggestions(query, container, input) {
+        console.log('Fetching suggestions for:', query);
+        
+        // Показываем индикатор загрузки
+        container.innerHTML = '<div class="suggestion-item">Загрузка...</div>';
+        container.style.display = 'block';
+        
+        fetch(`/search/suggestions/?q=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Received suggestions:', data.suggestions);
+                showSuggestions(data.suggestions, container, input);
+            })
+            .catch(error => {
+                console.error('Error fetching suggestions:', error);
+                // Fallback to static suggestions
+                const staticSuggestions = generateStaticSuggestions(query);
+                showSuggestions(staticSuggestions, container, input);
+            });
+    }
+    
+    function generateStaticSuggestions(query) {
+        const allSuggestions = [
+            'паспорт', 'загранпаспорт', 'регистрация', 
+            'налоговый вычет', 'пособие', 'субсидия',
+            'юридическая консультация', 'ИП', 'недвижимость'
+        ];
+        
+        return allSuggestions.filter(suggestion => 
+            suggestion.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 5);
+    }
+    
+    function showSuggestions(suggestions, container, input) {
+        container.innerHTML = '';
+        
+        if (suggestions.length === 0) {
+            container.innerHTML = '<div class="suggestion-item">Ничего не найдено</div>';
+        } else {
+            suggestions.forEach(suggestion => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.textContent = suggestion;
+                item.addEventListener('click', function() {
+                    input.value = suggestion;
+                    container.style.display = 'none';
+                    input.closest('form').submit();
+                });
+                container.appendChild(item);
+            });
+        }
+        
+        // Позиционируем и показываем контейнер
+        container.style.width = input.offsetWidth + 'px';
+        container.style.top = (input.offsetTop + input.offsetHeight) + 'px';
+        container.style.left = input.offsetLeft + 'px';
+        container.style.display = 'block';
+    }
+    
+    initSearchSuggestions();
+});
+</script>
+
+<style>
+.search-suggestions {
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.suggestion-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+    background-color: #3498db;
+    color: white;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+form[method="get"] {
+    position: relative;
+}
+</style>
 </html>
